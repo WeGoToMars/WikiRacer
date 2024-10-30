@@ -1,6 +1,8 @@
-# Wikiracer 
+# Wikiracer 🏁
 
 WikiRacer is a Java program that finds a hyperlink path between two pages in the English Wikipedia, blazingly fast!
+
+<sub>_Originally built as a school project in February 2024. Uploaded to GitHub with code cleanup and aditional performance improvements in October 2024._<sub>
 
 Use it for exploration, or to troll your friends by cheating at an online [wiki-race](https://wiki-race.com/).
 

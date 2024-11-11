@@ -1,8 +1,8 @@
-package src;
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.LinkedHashMap;
 import java.util.Random;
 import java.util.Scanner;
@@ -59,7 +59,7 @@ public class wikiracer {
         for (int i = 0; i < Math.min(MAX_EXPLORE, x.size()); i++) {
             Link front = x.get(i);
 
-            if (!scannedArticles.contains(front.title)) {
+            if (!scannedArticles.contains(front.title.replace(" ", "_"))) {
                 completionService.submit(() -> 
                     WikiAPI.getLinks(front, "forward")
                 );
@@ -73,7 +73,7 @@ public class wikiracer {
         for (int i = 0; i < Math.min(MAX_EXPLORE, y.size()); i++) {
             Link back = y.get(i);
 
-            if (!scannedArticles.contains(back.title)) {
+            if (!scannedArticles.contains(back.title.replace(" ", "_"))) {
                 completionService.submit(() -> 
                     WikiAPI.getLinks(back, "backward")
                 );
@@ -89,6 +89,10 @@ public class wikiracer {
             if (link.mode.equals("forward")) {
                 a = link.links;
 
+                if (a.size() == 0) {
+                    System.out.println("[ERROR] No links found from " + link.title + "! Check the spelling of the page title if you entered it manually. ");
+                }
+
                 a.removeAll(forward.keySet()); // remove all articles that we already know how to get to, as existing path is quicker
                 
                 Path p = new Path(forward.get(link).append(link).path);
@@ -99,6 +103,10 @@ public class wikiracer {
                 if (!QUIET) {System.out.print("⏩ Checked " + link.title + " (" + a.size() + " links)... ");}
             } else if (link.mode.equals("backward")) {
                 b = link.links;
+
+                if (b.size() == 0) {
+                    System.out.println("[ERROR] No pages link to " + link.title + "! Check the spelling of the page title if you entered it manually. ");
+                }
 
                 b.removeAll(backward.keySet()); // remove all articles that we already know how to get from, as existing path is quicker
                 
@@ -201,15 +209,17 @@ public class wikiracer {
         forward.put(new Link(START), new Path());
         backward.put(new Link(FINISH), new Path());
 
-        for (int i = 0; i < 10; i++) {
+        int MAX_LENGTH = 10;
+        boolean ARTICLE_ISOLATED = false;
+        for (int i = 0; i < MAX_LENGTH; i++) {
             long itertime = System.currentTimeMillis();
             a = new ArrayList<>(forward.keySet());
             b = new ArrayList<>(backward.keySet());
             
             try {
                 // sort articles, so the articles with the smallest score are explored first
-                Collections.sort(a, (o1, o2) -> o1.score - o2.score);
-                Collections.sort(b, (o1, o2) -> o1.score - o2.score);
+                Collections.sort(a, Comparator.nullsLast(Comparator.comparingInt(a -> a.score)));
+                Collections.sort(b, Comparator.nullsLast(Comparator.comparingInt(b -> b.score)));
             } catch (Exception e) {
                 e.printStackTrace();
                 System.exit(0);
@@ -220,28 +230,39 @@ public class wikiracer {
                 break;
             }
             if (!QUIET) {System.out.println(String.format("Iteration %d finished in %.2f seconds", i, (System.currentTimeMillis()-itertime)/1000.0));}
+
+            if (forward.size() == 0) {
+                System.out.println("Path can't be found, starting article is isolated.");
+                ARTICLE_ISOLATED = true;
+                break;
+            }
+            if (backward.size() == 0) {
+                System.out.println("Path can't be found, target article is isolated.");
+                ARTICLE_ISOLATED = true;
+                break;
+            }
         }
 
         double exec_time = (System.currentTimeMillis()-stime)/1000.0;
 
+        System.out.println(String.format("⏱️ Execution time: %.2f seconds", exec_time));
+        if (!QUIET) {System.out.println(String.format("Check the result: https://www.sixdegreesofwikipedia.com/?source=%s&target=%s", encode(START), encode(FINISH)));}
+
         if (p == null) {
-            System.out.println("No path found.");
+            if (!ARTICLE_ISOLATED) {
+                System.out.println("Can't find a valid path after MAX_LENGTH="+MAX_LENGTH+" iterations.");
+            }
             if (BENCHMARK) {
                 System.out.println("|"+START+"|"+FINISH+"|"+exec_time+"|"+"0"+"|");
             }
             System.exit(0);
         }
         
-        System.out.println(String.format("⏱️ Execution time: %.2f seconds", exec_time));
-        if (!QUIET) {System.out.println(String.format("Check the result: https://www.sixdegreesofwikipedia.com/?source=%s&target=%s", encode(START), encode(FINISH)));}
-
         if (BENCHMARK) {
             System.out.println("|"+START+"|"+FINISH+"|"+exec_time+"|"+p.path.size()+"|");
         }
 
         p.path.remove(0);
         if (USECHROMECLI) {ChromeCLIController.guide(p);} else {System.exit(0);}
-
-
     }
 }

@@ -1,4 +1,3 @@
-package src;
 import java.net.URI;
 import java.net.URLDecoder;
 import java.net.http.HttpClient;
@@ -21,8 +20,6 @@ import com.google.gson.JsonObject;
  * The API is wonderfully documented here: https://www.mediawiki.org/wiki/API:Main_page
  */
 public class WikiAPI {
-    //private static String encode(String s) {return URLEncoder.encode(s, StandardCharsets.UTF_8);}
-    
     /**
      * This function makes a query to the Wikipedia API and returns the list of links from the given query.
      * 
@@ -34,9 +31,9 @@ public class WikiAPI {
         
         // Make Wikipedia API query and return the list of links
         if (mode.equals("forward")) {
-            req = "action=query&format=json&generator=links&gplnamespace=0&gpllimit=max&prop=revisions&rvprop=size&titles=" + l.title.replace(" ", "_").replace("&", "%26");
+            req = "action=query&format=json&generator=links&gplnamespace=0&gpllimit=max&prop=revisions&rvprop=size&redirects=1&titles=" + l.title.replace(" ", "_").replace("&", "%26");
         } else if (mode.equals("backward")) {
-            req = "action=query&format=json&generator=linkshere&glhnamespace=0&glhlimit=max&prop=revisions&rvprop=size&titles=" + l.title.replace(" ", "_").replace("&", "%26");
+            req = "action=query&format=json&generator=linkshere&glhnamespace=0&glhlimit=max&prop=revisions&rvprop=size&redirects=1&titles=" + l.title.replace(" ", "_").replace("&", "%26");
         }
         String lastContinue = "";
 
@@ -78,7 +75,7 @@ public class WikiAPI {
                     }
                 }
             }
-            if (keys.contains("warnings")) {
+            if (keys.contains("warnings") || keys.contains("errors")) {
                 System.out.println(json.getAsJsonObject("warnings").toString());
             }
             if (!keys.contains("continue")) {

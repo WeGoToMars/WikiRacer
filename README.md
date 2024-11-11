@@ -61,4 +61,4 @@ Comparatively, Six Degrees of Wikipedia achieves a runtime of **2.532** seconds 
 
 It represents the "proper" approach, finding all paths of minimal length simultaneously. Therefore, it was chosen as a target for the benchmark as I was wondering how close to its length I could come without using stored data. 
 
-However, storing ~10 GB of data has to be continuously re-downloaded and rebuilt to keep up with Wikipedia changes, which is a significant limitation of their approach.
+However, that uses up a big chunk of RAM and requires ~10 GB of data has to be continuously re-downloaded and rebuilt to keep up with Wikipedia changes, which a a significant limitation.

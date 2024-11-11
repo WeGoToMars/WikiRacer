@@ -1,0 +1,9 @@
+{
+    "java.project.sourcePaths": [
+        "src"
+    ],
+    "java.project.referencedLibraries": [
+        "/Users/wegotomars/Documents/WikiRacer1/lib/jsoup-1.17.2.jar",
+        "/Users/wegotomars/Documents/WikiRacer1/lib/gson-2.10.1.jar"
+    ]
+}

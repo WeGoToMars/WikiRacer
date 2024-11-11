@@ -1,4 +1,3 @@
-package src;
 import java.io.Serializable;
 
 import com.google.gson.JsonElement;
